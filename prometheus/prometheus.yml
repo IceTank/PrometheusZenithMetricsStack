@@ -1,0 +1,52 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Pulls metrics from the Prometheus server itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  # OS-Metrics from node_exporter running on the same host as the Prometheus server
+  - job_name: "node_exporter_host"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          service: "host"
+          instance: "<host name>"
+
+  # OS-Metrics from node_exporter running on a remote host
+  # - job_name: "node_exporter_<instance>"
+  #   static_configs:
+  #     - targets: ["<host>:9100"]
+  #       labels:
+  #         service: "systemctl"
+  #         instance: "<host name>"
+
+  # Metrics from an api scraper that provides api.2b2t.vc data converted to metrics
+  # Needs the api scraper running and providing metrics at the specified endpoint
+  # - job_name: "api_scraper"
+  #   scrape_interval: 30s
+  #   static_configs:
+  #     - targets: ["host.docker.internal:8001"]
+  #       labels:
+  #         service: "go_service"
+  #         instance: "<host name>"
+
+  # Pulls metrics from a remote zenith_service_discovery endpoint
+  # This endpoint has to have the zenith_service_discovery program running and provide service discovery of zenith instances
+  # Pull metrics from zenith_exporter
+  # - job_name: "zenith_exporter_<instance>"
+  #   http_sd_configs:
+  #     - url: "http://<host>:9091/prometheus/sd"
+  #       refresh_interval: 30s
+
+  # Pull metrics from a local zenith-service_discovery endpoint
+  # Has to run in the same container network and provide service discovery of zenith instances
+  # - job_name: "zenith_exporter_local"
+  #   http_sd_configs:
+  #     - url: "http://host.docker.internal:9092/prometheus/sd"
+  #       refresh_interval: 30s
+
+

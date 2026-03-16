@@ -1,0 +1,22 @@
+# Test file for making HTTP request using the VS Code REST Client extension
+
+###
+
+### Request to a local service discovery endpoint for Prometheus, which should return a list of targets in JSON format
+
+GET http://localhost:9092/prometheus/sd HTTP/1.1
+
+### Request to a local metrics endpoint, port might change based on setup
+
+GET http://localhost:35751/metrics HTTP/1.1
+
+### Example Request to the Prometheus API to query for a specific metric over a time range, returning results in CSV format
+
+# This returns every sample recorded in the last hour
+@baseUrl = http://localhost:9090
+@metricName = zenith_server_tps
+@timeRange = 1h
+
+GET {{baseUrl}}/api/v1/query
+    ?query={{metricName}}[{{timeRange}}]
+Accept: application/csv

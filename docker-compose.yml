@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+    networks: [monitoring]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:12.3
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin # First boot login credentials, probably change this in production
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks: [monitoring]
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    pid: "host"
+    restart: unless-stopped
+    networks: [monitoring]
+    ports:
+      - "127.0.0.1:9100:9100"
+    command:
+      - --path.rootfs=/rootfs
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|run|sys|var/lib/docker/.+|var/lib/containers/.+|snap/.+)($|/)
+    volumes:
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+
+  # Optional: Pushgateway
+  # pushgateway:
+  #   image: prom/pushgateway:v1.8.0
+  #   container_name: pushgateway
+  #   ports:
+  #     - "127.0.0.1:9091:9091"
+  #   restart: unless-stopped
+  #   networks: [monitoring]
+
+  # Optional: An api scraper that provides api.2b2t.vc data converted to metrics for Prometheus
+  # Needs the api_scraper image built and available locally
+  # api_scraper:
+  #   image: api_scraper
+  #   container_name: api_scraper
+  #   ports:
+  #     - "8001:8001"
+  #   restart: unless-stopped
+  #   networks: [monitoring]
+
+networks:
+  monitoring:
+
+volumes:
+  prometheus-data:
+  grafana-data:
