@@ -19,38 +19,25 @@ flowchart LR
         Prometheus
     end
 
-    subgraph SD_local["zenith_service_discovery (local)"]
-        SDL["/prometheus/sd"]
-    end
+    subgraph ZG1["Zenith Hosting Server (1..n) local or remote"]
+        Z1["Zenith instance 1 + ZenithMetricsPlugin"]
+        Z2["Zenith instance 2 + ZenithMetricsPlugin"]
 
-    subgraph SD_remote["zenith_service_discovery (remote, optional)"]
-        SDR["/prometheus/sd"]
-    end
-
-    subgraph ZG1["Zenith Servers (1..n)"]
-        Z1["Zenith + ZenithMetricsPlugin"]
-        Z2["Zenith + ZenithMetricsPlugin"]
-    end
-
-    subgraph ZG2["Zenith Servers (1..n)"]
-        Z3["Zenith + ZenithMetricsPlugin"]
+		SDL["zenith_service_discovery /prometheus/sd"]
     end
 
     Z1 -->|register| SDL
     Z2 -->|register| SDL
-    Z3 -->|register| SDR
 
     Prometheus -->|"HTTP SD poll"| SDL
-    Prometheus -->|"HTTP SD poll"| SDR
 
     Prometheus -.->|scrape metrics| Z1
     Prometheus -.->|scrape metrics| Z2
-    Prometheus -.->|scrape metrics| Z3
 ```
 
 **Flow:**
 
-1. Each Zenith server has the `ZenithMetricsPlugin` installed, which registers the instance with a local `zenith_service_discovery` process.
+1. Each Zenith instance the `ZenithMetricsPlugin` installed, which registers the instance with a local `zenith_service_discovery` process.
 2. Prometheus polls the `/prometheus/sd` endpoint on each configured `zenith_service_discovery` instance (local or remote) using HTTP service discovery. This returns the current list of live Zenith targets.
 3. Prometheus scrapes metrics directly from each discovered Zenith instance.
 
