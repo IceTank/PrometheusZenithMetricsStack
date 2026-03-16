@@ -4,8 +4,13 @@ This repository runs a small monitoring stack with Docker Compose:
 
 - Prometheus
 - Grafana
-- node-exporter
-- Pushgateway
+- [node-exporter](https://github.com/prometheus/node_exporter)
+- Pushgateway (Optional)
+
+It can also talk to Zenith metric endpoints such as:
+
+- [ZenithMetrics](https://github.com/IceTank/ZenithMetrics)
+- [zenith_service_discovery](https://github.com/IceTank/PrometheusServiceDiscoveryForZenithGolang)
 
 The `api_scraper` and `zenith_server_discovery` integrations are optional and belong to a different project. This repository only documents how to wire them into Prometheus after those programs already exist.
 
